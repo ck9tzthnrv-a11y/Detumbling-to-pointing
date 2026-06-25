@@ -8,7 +8,7 @@ J = [3190 0 0; 0 3790 0; 0 0 5672]; % [kg*m^2] Inerzie sui 3 assi principali
 % Limiti Hardware delle Ruote di Reazione (Collins RSI 12-75/60)
 tau_m = 0.106;          % Coppia massima erogabile per ruota [Nm]
 h_max = 12;             % Capacità di momento per ruota [Nms]
-
+theta_deg = 45;
 % 2. PARAMETRI DEL CONTROLLORE DI KJELLBERG
 J_max = max(diag(J));
 theta_dot_m = (2 * h_max) / J_max; % Rateo massimo [rad/s]
@@ -17,8 +17,17 @@ theta_dot_m = (2 * h_max) / J_max; % Rateo massimo [rad/s]
 % Imponiamo che la richiesta massima di coppia K_max non superi tau_m
 % K_max = c * theta_dot_m * J_max  --->  c = tau_m / (theta_dot_m * J_max)
 
-c = tau_m / (theta_dot_m * J_max);   % "Freno" derivativo tarato sull'hardware
-kappa = (c^2) / 2;                   % "Molla" prop. per garantire smorzamento critico (zeta = 0.707)
+% c = tau_m / (theta_dot_m * J_max);   % "Freno" derivativo tarato sull'hardware
+% kappa = (c^2)/2 ;                   % "Molla" prop. per garantire smorzamento critico (zeta = 0.707)
+
+% Tuning del controllore PD per Inseguimento Orbitale (Tracking)
+omega_n = 0.05;         % Frequenza naturale desiderata [rad/s] (es. 0.05)
+zeta = 1.0;             % Smorzamento Critico per tracking senza oscillazioni
+
+kappa = omega_n^2;      % Guadagno "molla" (corrisponde a Kp diviso l'inerzia)
+c = 2 * zeta * omega_n; % Guadagno "freno" (corrisponde a Kd diviso l'inerzia)
+
+
 %% 4. PARAMETRI ORBITALI (Per calcolo disturbi ambientali)
 % Dati per una tipica orbita bassa (LEO) - Esempio tratto dai tuoi file
 R_E = 6378.1363e3;      % Raggio della Terra [m]
@@ -29,7 +38,7 @@ a = R_E + alt;          % Semiasse maggiore [m]
 ecc = 1e-10;            % Eccentricità (Quasi circolare)
 inc = 15.3 * (pi/180);    % Inclinazione  [rad]
 RAAN = 0;               % Right Ascension of Ascending Node [rad]
-AOP = 0;                % Argomento del perigeo [rad]
+AOP = 0;                % Argomento del perigeo  [rad]
 ni = 0;                 % Anomalia vera iniziale [rad]
 
 omega_orb = sqrt(mu / a^3); % Velocità angolare orbitale (Mean motion) [rad/s]
